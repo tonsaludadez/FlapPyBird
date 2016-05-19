@@ -50,6 +50,9 @@ PIPES_LIST = (
     'assets/sprites/pipe-red.png',
 )
 
+#create automata
+automata = {'N':[], 'J':[], 'D':[]}
+
 
 def main():
     global SCREEN, FPSCLOCK
@@ -151,6 +154,11 @@ def showWelcomeAnimation():
     # player shm for up-down motion on welcome screen
     playerShmVals = {'val': 0, 'dir': 1}
 
+    return {
+            'playery': playery + playerShmVals['val'],
+            'basex': basex,
+            'playerIndexGen': playerIndexGen,
+            }
     while True:
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -217,8 +225,32 @@ def mainGame(movementInfo):
     playerFlapAcc =  -9   # players speed on flapping
     playerFlapped = False # True when player flaps
 
+    prevx = 0
+    prevy = 0
 
     while True:
+        index = 0
+        alive = True
+        jump = False
+
+        while playerx > lowerPipes[index]['x']:
+            index = index + 1
+
+        for dictionary in automata['J']:
+            if lowerPipes[index]['x'] - playerx == dictionary.get('x') and lowerPipes[index]['y'] - playery == dictionary.get('y'):
+                print 'jump!'
+                jump = True
+                playerVelY = playerFlapAcc
+                playerFlapped = True
+                SOUNDS['wing'].play()
+
+        if {'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 'px':prevx, 'py':prevy} in automata['J']:
+            print 'jump!'
+            jump = True
+            playerVelY = playerFlapAcc
+            playerFlapped = True
+            SOUNDS['wing'].play()
+
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
@@ -232,7 +264,80 @@ def mainGame(movementInfo):
         # check for crash here
         crashTest = checkCrash({'x': playerx, 'y': playery, 'index': playerIndex},
                                upperPipes, lowerPipes)
+
         if crashTest[0]:
+            alive = False
+            if {'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 'px':prevx, 'py':prevy} in automata['J']:
+                automata['J'].remove({'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 'px':prevx, 'py':prevy})
+
+            # automata['D'].append({'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 'px':prevx, 'py':prevy})
+            plx = lowerPipes[index]['x'] - playerx
+            ply = lowerPipes[index]['y'] - playery
+            ppx = prevx
+            ppy = prevy
+
+            i = 0
+            ctr = 0
+            # print automata['D']
+            found = False
+            while {'x':plx, 'y':ply, 'px':ppx, 'py':ppy} in automata['D']:
+
+                ctr = ctr + 1
+                print ctr
+                i = automata['D'].index({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
+                plx = automata['D'][i].get('px')
+                ply = automata['D'][i].get('py')
+
+                for dictionary in automata['N']:
+                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
+                        print 'hiN'
+                        ppx = dictionary.get('px')
+                        ppy = dictionary.get('py')
+                        found = True
+                        break;
+                if found:
+                    continue;
+                for dictionary in automata['J']:
+                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
+                        print 'hiJ'
+                        ppx = dictionary.get('px')
+                        ppy = dictionary.get('py')
+                        found = True
+                        break;
+                if found:
+                    continue;
+                for dictionary in automata['D']:
+                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
+                        print 'hiD'
+                        ppx = dictionary.get('px')
+                        ppy = dictionary.get('py')
+
+
+            print {'x':plx, 'y':ply, 'px':ppx, 'py':ppy}
+            automata['D'].append({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
+
+            if {'x':plx, 'y':ply, 'px':ppx, 'py':ppy} in automata['J']:
+                automata['J'].remove({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
+                plx = ppx
+                ply = ppy
+
+                for dictionary in automata['J']:
+                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
+                        ppx = dictionary.get('px')
+                        ppy = dictionary.get('py')
+
+            if {'x':plx, 'y':ply, 'px':ppx, 'py':ppy} in automata['N']:
+                automata['N'].remove({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
+                plx = ppx
+                ply = ppy
+
+                for dictionary in automata['N']:
+                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
+                        ppx = dictionary.get('px')
+                        ppy = dictionary.get('py')
+            print {'x':plx, 'y':ply, 'px':ppx, 'py':ppy}
+            automata['J'].append({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
+            
             return {
                 'y': playery,
                 'groundCrash': crashTest[1],
@@ -242,6 +347,24 @@ def mainGame(movementInfo):
                 'score': score,
                 'playerVelY': playerVelY,
             }
+
+        #check height of player in respect to lower pipe
+        #ai part
+        
+
+
+        #print 'x = ' + str(lowerPipes[index]['x'] - playerx)
+        #print 'y = ' + str(lowerPipes[index]['y'] - playery)
+
+        if alive and not jump:
+            automata['N'].append({'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 
+                'px':prevx, 'py':prevy})
+
+
+
+        prevx = lowerPipes[index]['x'] - playerx
+        prevy = lowerPipes[index]['y'] - playery
+
 
         # check for score
         playerMidPos = playerx + IMAGES['player'][0].get_width() / 2
@@ -315,6 +438,8 @@ def showGameOverScreen(crashInfo):
     if not crashInfo['groundCrash']:
         SOUNDS['die'].play()
 
+    return
+
     while True:
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -361,14 +486,18 @@ def playerShm(playerShm):
 def getRandomPipe():
     """returns a randomly generated pipe"""
     # y of gap between upper and lower pipe
-    gapY = random.randrange(0, int(BASEY * 0.6 - PIPEGAPSIZE))
-    gapY += int(BASEY * 0.2)
-    pipeHeight = IMAGES['pipe'][0].get_height()
+    # gapY = random.randrange(0, int(BASEY * 0.6 - PIPEGAPSIZE))
+    # gapY += int(BASEY * 0.2)
+    # pipeHeight = IMAGES['pipe'][0].get_height()
     pipeX = SCREENWIDTH + 10
 
+    # return [
+       # {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
+       # {'x': pipeX, 'y': gapY + PIPEGAPSIZE}, # lower pipe
+    # ]
     return [
-        {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
-        {'x': pipeX, 'y': gapY + PIPEGAPSIZE}, # lower pipe
+        {'x':pipeX ,'y':600},
+        {'x':pipeX ,'y':300}
     ]
 
 
