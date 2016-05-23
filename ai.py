@@ -9,7 +9,6 @@ class AI():
 		self.automata['D'] = []
 
 	def addToCurrentGame(self,playerState):
-		"""Add current state to game states"""
 		if len(self.currentGameStates) < 1000:
 			self.currentGameStates.append(playerState)
 		else:

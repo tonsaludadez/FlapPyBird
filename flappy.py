@@ -392,8 +392,8 @@ def getRandomPipe():
     pipeX = SCREENWIDTH + 10
 
     # return [
-       # {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
-       # {'x': pipeX, 'y': gapY + PIPEGAPSIZE}, # lower pipe
+    #    {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
+    #    {'x': pipeX, 'y': gapY + PIPEGAPSIZE}, # lower pipe
     # ]
     return [
         {'x':pipeX ,'y':600},
