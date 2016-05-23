@@ -1,10 +1,12 @@
 from itertools import cycle
 import random
 import sys
+import ai
 
 import pygame
 from pygame.locals import *
 
+ai = ai.AI()
 
 FPS = 30
 SCREENWIDTH  = 288
@@ -49,9 +51,6 @@ PIPES_LIST = (
     'assets/sprites/pipe-green.png',
     'assets/sprites/pipe-red.png',
 )
-
-#create automata
-automata = {'N':[], 'J':[], 'D':[]}
 
 
 def main():
@@ -225,28 +224,17 @@ def mainGame(movementInfo):
     playerFlapAcc =  -9   # players speed on flapping
     playerFlapped = False # True when player flaps
 
-    prevx = 0
-    prevy = 0
-
+    ai.gameStart()          #start ai
     while True:
         index = 0
-        alive = True
-        jump = False
 
         while playerx > lowerPipes[index]['x']:
             index = index + 1
 
-        for dictionary in automata['J']:
-            if lowerPipes[index]['x'] - playerx == dictionary.get('x') and lowerPipes[index]['y'] - playery == dictionary.get('y'):
-                print 'jump!'
-                jump = True
-                playerVelY = playerFlapAcc
-                playerFlapped = True
-                SOUNDS['wing'].play()
+        currentState = {'x': lowerPipes[index]['x'] - playerx, 'y': lowerPipes[index]['y'] - playery}
+        ai.addToCurrentGame(currentState)
 
-        if {'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 'px':prevx, 'py':prevy} in automata['J']:
-            print 'jump!'
-            jump = True
+        if ai.inJump(currentState):
             playerVelY = playerFlapAcc
             playerFlapped = True
             SOUNDS['wing'].play()
@@ -266,78 +254,7 @@ def mainGame(movementInfo):
                                upperPipes, lowerPipes)
 
         if crashTest[0]:
-            alive = False
-            if {'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 'px':prevx, 'py':prevy} in automata['J']:
-                automata['J'].remove({'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 'px':prevx, 'py':prevy})
-
-            # automata['D'].append({'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 'px':prevx, 'py':prevy})
-            plx = lowerPipes[index]['x'] - playerx
-            ply = lowerPipes[index]['y'] - playery
-            ppx = prevx
-            ppy = prevy
-
-            i = 0
-            ctr = 0
-            # print automata['D']
-            found = False
-            while {'x':plx, 'y':ply, 'px':ppx, 'py':ppy} in automata['D']:
-
-                ctr = ctr + 1
-                print ctr
-                i = automata['D'].index({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
-                plx = automata['D'][i].get('px')
-                ply = automata['D'][i].get('py')
-
-                for dictionary in automata['N']:
-                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
-                        print 'hiN'
-                        ppx = dictionary.get('px')
-                        ppy = dictionary.get('py')
-                        found = True
-                        break;
-                if found:
-                    continue;
-                for dictionary in automata['J']:
-                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
-                        print 'hiJ'
-                        ppx = dictionary.get('px')
-                        ppy = dictionary.get('py')
-                        found = True
-                        break;
-                if found:
-                    continue;
-                for dictionary in automata['D']:
-                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
-                        print 'hiD'
-                        ppx = dictionary.get('px')
-                        ppy = dictionary.get('py')
-
-
-            print {'x':plx, 'y':ply, 'px':ppx, 'py':ppy}
-            automata['D'].append({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
-
-            if {'x':plx, 'y':ply, 'px':ppx, 'py':ppy} in automata['J']:
-                automata['J'].remove({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
-                plx = ppx
-                ply = ppy
-
-                for dictionary in automata['J']:
-                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
-                        ppx = dictionary.get('px')
-                        ppy = dictionary.get('py')
-
-            if {'x':plx, 'y':ply, 'px':ppx, 'py':ppy} in automata['N']:
-                automata['N'].remove({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
-                plx = ppx
-                ply = ppy
-
-                for dictionary in automata['N']:
-                    if plx == dictionary.get('x') and ply == dictionary.get('y'):
-                        ppx = dictionary.get('px')
-                        ppy = dictionary.get('py')
-            print {'x':plx, 'y':ply, 'px':ppx, 'py':ppy}
-            automata['J'].append({'x':plx, 'y':ply, 'px':ppx, 'py':ppy})
-            
+            ai.gameEnd()
             return {
                 'y': playery,
                 'groundCrash': crashTest[1],
@@ -347,23 +264,6 @@ def mainGame(movementInfo):
                 'score': score,
                 'playerVelY': playerVelY,
             }
-
-        #check height of player in respect to lower pipe
-        #ai part
-        
-
-
-        #print 'x = ' + str(lowerPipes[index]['x'] - playerx)
-        #print 'y = ' + str(lowerPipes[index]['y'] - playery)
-
-        if alive and not jump:
-            automata['N'].append({'x':lowerPipes[index]['x'] - playerx, 'y':lowerPipes[index]['y'] - playery, 
-                'px':prevx, 'py':prevy})
-
-
-
-        prevx = lowerPipes[index]['x'] - playerx
-        prevy = lowerPipes[index]['y'] - playery
 
 
         # check for score
