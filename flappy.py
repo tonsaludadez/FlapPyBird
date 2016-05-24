@@ -232,6 +232,8 @@ def mainGame(movementInfo):
             index = index + 1
 
         currentState = {'x': lowerPipes[index]['x'] - playerx, 'y': lowerPipes[index]['y'] - playery}
+        print currentState[x]
+        print currentState[y]
         ai.addToCurrentGame(currentState)
 
         if ai.inJump(currentState):
@@ -386,19 +388,19 @@ def playerShm(playerShm):
 def getRandomPipe():
     """returns a randomly generated pipe"""
     # y of gap between upper and lower pipe
-    # gapY = random.randrange(0, int(BASEY * 0.6 - PIPEGAPSIZE))
-    # gapY += int(BASEY * 0.2)
-    # pipeHeight = IMAGES['pipe'][0].get_height()
+    gapY = random.randrange(0, int(BASEY * 0.6 - PIPEGAPSIZE))
+    gapY += int(BASEY * 0.2)
+    pipeHeight = IMAGES['pipe'][0].get_height()
     pipeX = SCREENWIDTH + 10
 
-    # return [
-    #    {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
-    #    {'x': pipeX, 'y': gapY + PIPEGAPSIZE}, # lower pipe
-    # ]
     return [
-        {'x':pipeX ,'y':600},
-        {'x':pipeX ,'y':300}
+       {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
+       {'x': pipeX, 'y': gapY + PIPEGAPSIZE}, # lower pipe
     ]
+    # return [
+    #     {'x':pipeX ,'y':600},
+    #     {'x':pipeX ,'y':300}
+    # ]
 
 
 def showScore(score):

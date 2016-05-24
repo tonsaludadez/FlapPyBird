@@ -4,11 +4,14 @@ class AI():
 	currentGameStates = []
 
 	def __init__(self):
+		"""This initializes the automata"""
 		self.automata['N'] = []
 		self.automata['J'] = []
 		self.automata['D'] = []
 
 	def addToCurrentGame(self,playerState):
+		"""This adds the current state to currentGameStates list"""
+
 		if len(self.currentGameStates) < 1000:
 			self.currentGameStates.append(playerState)
 		else:
@@ -16,9 +19,14 @@ class AI():
 			self.currentGameStates.append(playerState)
 
 	def gameStart(self):
+		"""Initializes the currentGameStates list"""
 		currentGameStates = []
 
 	def gameEnd(self):
+		"""
+		Checks currentGameStates and when game ends, currentGameStates are assigned in automata.
+		Uses Backtracking to determine which states are placed in the Automata.
+		"""
 		index = len(self.currentGameStates) - 1
 
 		while self.currentGameStates[index] in self.automata['D'] and index >= 0:
@@ -49,15 +57,19 @@ class AI():
 			index = index - 1
 
 	def inJump(self, currentState):
+		"""Checks if current state is a Jump State"""
 		return currentState in self.automata['J']
 
 	def printAutomata(self):
+		"""Prints the automata"""
 		print self.automata
 
 	def printJumpStates(self):
+		"""Prints the Jump State"""
 		print self.automata['J']
 
 	def printCurrentGameStates(self):
+		"""Print the currentGameStates"""
 		print self.currentGameStates
 
 		
